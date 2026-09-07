@@ -1,3 +1,10 @@
+# XcodeGen project spec
+# 用法（在 Mac 或 macOS CI 上）：
+#   xcodegen generate --spec project.yml
+# 会生成 WellnessWatch.xcodeproj，直接 xcodebuild 可用。
+#
+# 配合 .github/workflows/build.yml 实现"无 Mac 本地也能构建"。
+
 name: WellnessWatch
 options:
   bundleIdPrefix: com.wellness.watch
@@ -7,8 +14,9 @@ options:
   createIntermediateGroups: true
   generateEmptyDirectories: true
   # 强制生成 Xcode 15.4 兼容的 .pbxproj（objectVersion=60）
-  # 否则 XcodeGen 在没有 Xcode 的环境会生成 objectVersion=77，
+  # 否则 XcodeGen 在没有 Xcode 的环境（CI 沙箱）会生成 objectVersion=77
   # 导致 GitHub Actions macos-14 runner（Xcode 15.4）打不开项目。
+  # 当 CI 升级到 macos-15 / Xcode 16 时可以改回 "16.0"
   xcodeVersion: "15.4"
 
 settings:
