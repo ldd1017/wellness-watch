@@ -83,7 +83,9 @@ final class HealthManager: ObservableObject {
                 completion()
                 return
             }
-            self?.onNewSample(kind: .systolic) { _ in completion() }
+            Task { @MainActor in
+                self?.onNewSample(kind: .systolic) { _ in completion() }
+            }
         }
         store.execute(sysQuery)
         observerQueries.append(sysQuery)
@@ -97,7 +99,9 @@ final class HealthManager: ObservableObject {
                 completion()
                 return
             }
-            self?.onNewSample(kind: .diastolic) { _ in completion() }
+            Task { @MainActor in
+                self?.onNewSample(kind: .diastolic) { _ in completion() }
+            }
         }
         store.execute(diaQuery)
         observerQueries.append(diaQuery)
@@ -135,8 +139,8 @@ final class HealthManager: ObservableObject {
 
             // bloodPressure 单位：mmHg，兼容 kPa 也用 mmHg 转换
             let mmHg = (kind == .systolic)
-                ? sample.quantity.doubleValue(for: HKUnit.millimeterOfMercuryUnit())
-                : sample.quantity.doubleValue(for: HKUnit.millimeterOfMercuryUnit())
+                ? sample.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
+                : sample.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
 
             Task { @MainActor in
                 if kind == .systolic {
@@ -164,7 +168,7 @@ final class HealthManager: ObservableObject {
         ) { [weak self] _, samples, _ in
             guard let self,
                   let sample = samples?.first as? HKQuantitySample else { return }
-            let v = sample.quantity.doubleValue(for: HKUnit.millimeterOfMercuryUnit())
+            let v = sample.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
             Task { @MainActor in
                 self.lastSystolic = v
                 self.lastUpdate = sample.endDate
@@ -181,7 +185,7 @@ final class HealthManager: ObservableObject {
             ) { [weak self] _, samples, _ in
                 guard let self,
                       let s = samples?.first as? HKQuantitySample else { return }
-                let v = s.quantity.doubleValue(for: HKUnit.millimeterOfMercuryUnit())
+                let v = s.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
                 Task { @MainActor in self.lastDiastolic = v }
             }
             store.execute(q2)
