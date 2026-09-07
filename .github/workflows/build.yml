@@ -18,7 +18,7 @@ jobs:
       - name: Generate xcodeproj
         run: xcodegen generate --spec project.yml
 
-      - name: Build (unsigned)
+      - name: Build (unsigned, real device)
         run: |
           mkdir -p out
           xcodebuild \
@@ -26,15 +26,20 @@ jobs:
             -scheme WellnessWatch \
             -configuration Release \
             -derivedDataPath build/ \
-            -destination 'generic/platform=watchOS Simulator' \
+            -destination 'generic/platform=watchOS' \
+            -sdk watchos \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             ONLY_ACTIVE_ARCH=NO \
+            ARCHS="arm64_32" \
             build
-          # 产物路径在 derivedDataPath/Build/Products/<Config>-<platform>/
-          cp -R build/Build/Products/Release-watchsimulator/WellnessWatch.app out/
-          (cd out && tar czf WellnessWatch-unsigned.app.tar.gz WellnessWatch.app)
+          cp -R build/Build/Products/Release-watchos/WellnessWatch.app out/
+          cd out && mkdir -p Payload && cp -R WellnessWatch.app Payload/ && \
+            zip -r WellnessWatch-unsigned.ipa Payload > /dev/null && \
+            rm -rf Payload
+          tar czf WellnessWatch-unsigned.app.tar.gz WellnessWatch.app
+          ls -lh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -43,4 +48,3 @@ jobs:
           path: out/WellnessWatch-unsigned.app.tar.gz
           if-no-files-found: error
           retention-days: 7
-
