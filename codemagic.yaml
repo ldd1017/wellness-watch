@@ -1,0 +1,97 @@
+# Codemagic CI/CD
+# 国内可直接访问 codemagic.io 注册（支持 GitHub/GitLab/Bitbucket）
+# 免费层：500 分钟/月 macOS 构建
+# 项目接入流程：https://docs.codemagic.io/getting-started/adding-apps-from-custom-sources/
+#
+# 用法：
+#   1. 注册 codemagic.io 账号
+#   2. 关联你的 Git 仓库（GitHub / GitLab / Bitbucket 任一）
+#   3. push 代码后会自动检测 codemagic.yaml 并开始构建
+#   4. 构建完成后下载 WellnessWatch-unsigned.app.tar.gz
+#
+# 提示：如果你 GitHub 上不去，把代码推到 GitLab.com / Bitbucket（都国内可直连）
+
+workflows:
+  wellness-watch-unsigned:
+    name: Build (unsigned)
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install XcodeGen
+        script: |
+          brew install xcodegen
+      - name: Generate xcodeproj
+        script: xcodegen generate --spec project.yml
+      - name: Archive
+        script: |
+          set -eux
+          xcodebuild \
+            -project WellnessWatch.xcodeproj \
+            -scheme WellnessWatch \
+            -configuration Release \
+            -archivePath "$CM_BUILD_DIR/WellnessWatch.xcarchive" \
+            -destination 'generic/platform=watchOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            archive
+      - name: Package
+        script: |
+          set -eux
+          mkdir -p "$CM_ARTIFACT_DIR"
+          cp -R "$CM_BUILD_DIR/WellnessWatch.xcarchive/Products/Applications/WellnessWatch.app" "$CM_ARTIFACT_DIR/"
+          (cd "$CM_ARTIFACT_DIR" && tar czf WellnessWatch-unsigned.app.tar.gz WellnessWatch.app)
+    artifacts:
+      - "$CM_ARTIFACT_DIR/WellnessWatch-unsigned.app.tar.gz"
+      - "$CM_ARTIFACT_DIR/WellnessWatch.app"
+    publishing:
+      scripts:
+        - name: Done
+          script: |
+            echo "✅ Build complete. Download WellnessWatch-unsigned from artifacts."
+            echo "📦 Install with: open WellnessWatch-unsigned.app.tar.gz → drop to AltStore"
+
+  # 签名工作流（需要配置 Apple Developer 证书和 Provisioning Profile，
+  # 在 Codemagic UI → Settings → Code signing 页面配置）
+  wellness-watch-signed:
+    name: Build (signed)
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      cocoapods: default
+      groups:
+        - app_store_credentials   # 在 Codemagic 后台配置 P12 + Profile
+    scripts:
+      - name: Install XcodeGen
+        script: brew install xcodegen
+      - name: Generate xcodeproj
+        script: xcodegen generate --spec project.yml
+      - name: Fetch signing assets
+        script: |
+          set -eux
+          keychain initialize
+      - name: Archive (signed)
+        script: |
+          set -eux
+          xcodebuild \
+            -project WellnessWatch.xcodeproj \
+            -scheme WellnessWatch \
+            -configuration Release \
+            -archivePath "$CM_BUILD_DIR/WellnessWatch-Signed.xcarchive" \
+            -destination 'generic/platform=watchOS' \
+            -codesign-identity "$CM_DISTRIBUTION_CERTIFICATE_HASH" \
+            -archive
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/WellnessWatch-Signed.xcarchive" \
+            -exportPath "$CM_ARTIFACT_DIR" \
+            -exportOptionsPlist "$CM_EXPORT_OPTIONS"
+    artifacts:
+      - "$CM_ARTIFACT_DIR/WellnessWatch.ipa"
+    publishing:
+      app_store_connect:
+        # 如果配了 App Store Connect API key，可自动上传
+        auth: integration

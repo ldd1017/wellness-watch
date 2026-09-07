@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>zh_CN</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>WellnessWatch</string>
+
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+
+    <key>CFBundlePackageType</key>
+    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <key>LSRequiresIPhoneOS</key>
+    <false/>
+
+    <key>UIDeviceFamily</key>
+    <array>
+        <integer>4</integer>
+    </array>
+
+    <!-- HealthKit：读取血压必须指定 usage 说明，App Store 审核会查 -->
+    <key>NSHealthShareUsageDescription</key>
+    <string>用于在新血压读数进入 HealthKit 时提醒您"不要冲动"。</string>
+
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>用于记录您手动输入的血压测试结果。</string>
+
+    <!-- 通知 -->
+    <key>NSUserNotificationsUsageDescription</key>
+    <string>用于发送"该睡觉了""不要吃那么多""血压偏高"等提醒。</string>
+
+    <!-- 后台模式：extended runtime session 用于 App 在后台持续运行计时器 -->
+    <key>WKBackgroundModes</key>
+    <array>
+        <string>workout-processing</string>
+    </array>
+
+    <key>WKApplication</key>
+    <true/>
+
+    <key>WKCompanionAppBundleIdentifier</key>
+    <string>com.wellness.watch.host</string>
+
+    <!-- WatchOS scene config -->
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <false/>
+        <key>UISceneConfigurations</key>
+        <dict/>
+    </dict>
+</dict>
+</plist>

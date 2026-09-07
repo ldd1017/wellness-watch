@@ -1,0 +1,72 @@
+# XcodeGen project spec
+# 用法（在 Mac 或 macOS CI 上）：
+#   xcodegen generate --spec project.yml
+# 会生成 WellnessWatch.xcodeproj，直接 xcodebuild 可用。
+#
+# 配合 .github/workflows/build.yml 实现"无 Mac 本地也能构建"。
+
+name: WellnessWatch
+options:
+  bundleIdPrefix: com.wellness.watch
+  deploymentTarget:
+    watchOS: "10.0"
+  developmentLanguage: zh-Hans
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+    WATCHOS_DEPLOYMENT_TARGET: "10.0"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: NO
+    GCC_TREAT_WARNINGS_AS_ERRORS: NO
+    ENABLE_PREVIEWS: YES
+
+targets:
+  WellnessWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: WellnessWatch
+        excludes:
+          - "Resources/Info.plist"
+    resources:
+      - WellnessWatch/Resources/Info.plist
+    info:
+      path: WellnessWatch/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: WellnessWatch
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        WKApplication: true
+        WKBackgroundModes:
+          - workout-processing
+        WKCompanionAppBundleIdentifier: com.wellness.watch.host
+        NSHealthShareUsageDescription: "用于在 HealthKit 检测到新血压读数时提醒您不要冲动。"
+        NSHealthUpdateUsageDescription: "用于记录您手动输入的血压测试结果。"
+        NSUserNotificationsUsageDescription: "用于发送『该睡觉了』『不要吃那么多』『血压偏高』等提醒。"
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIDeviceFamily:
+          - 4
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wellness.watch.app
+        TARGETED_DEVICE_FAMILY: "4"
+        SUPPORTS_MACCATALYST: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        GENERATE_INFOPLIST_FILE: NO
+    entitlements:
+      path: WellnessWatch/Resources/WellnessWatch.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access:
+          - health-records

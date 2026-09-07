@@ -1,0 +1,57 @@
+# GitLab CI/CD
+# 国内可直接访问 gitlab.com 注册（无需翻墙）
+# 免费：无限仓库 + 每月 400 分钟 macOS runner（Shared runner 配额）
+#      也可自托管 runner（自己的 Mac / 任何 Linux 机器）
+#
+# 用法：
+#   1. 注册 gitlab.com（推荐用国内邮箱）
+#   2. 推代码：git remote add gitlab https://gitlab.com/<你的用户名>/wellness-watch.git
+#             git push -u gitlab main
+#   3. GitLab 网页 → CI/CD → Pipelines 看到构建
+#   4. 完成后下载 WellnessWatch-unsigned artifact
+
+stages:
+  - build
+
+variables:
+  LC_ALL: "en_US.UTF-8"
+  LANG: "en_US.UTF-8"
+
+# 默认无 macOS runner 时，会跑得很慢或失败。
+# 建议：注册 gitlab.com 后联系 GitLab Support 申请免费 SaaS macOS runner 配额
+#       或者用 self-hosted runner（任何 Mac 机器）。
+
+build:unsigned:
+  stage: build
+  tags:
+    - macos                    # SaaS macOS runner（需在 GitLab 项目 Settings 启用 shared runners）
+    - shared-macos-amd64
+  timeout: 30m
+  script:
+    - which brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    - brew install xcodegen
+    - xcodegen generate --spec project.yml
+    - xcodebuild -version
+    - mkdir -p build out
+    - >
+      xcodebuild
+      -project WellnessWatch.xcodeproj
+      -scheme WellnessWatch
+      -configuration Release
+      -archivePath build/WellnessWatch.xcarchive
+      -destination 'generic/platform=watchOS Simulator'
+      CODE_SIGNING_ALLOWED=NO
+      CODE_SIGNING_REQUIRED=NO
+      CODE_SIGN_IDENTITY=""
+      archive
+    - cp -R build/WellnessWatch.xcarchive/Products/Applications/WellnessWatch.app out/
+    - (cd out && tar czf WellnessWatch-unsigned.app.tar.gz WellnessWatch.app)
+  artifacts:
+    name: "wellness-watch-$CI_COMMIT_SHORT_SHA"
+    expire_in: 1 week
+    paths:
+      - out/WellnessWatch-unsigned.app.tar.gz
+      - out/WellnessWatch.app
+  rules:
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "web"
