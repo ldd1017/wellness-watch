@@ -104,7 +104,7 @@ struct TimerItem: Identifiable, Codable, Equatable, Hashable {
     }
 
     static func defaultEating(maxMinutes: Int = 30) -> TimerItem {
-        TimerItem(name: "吃饭节律", kind: .eating, eatingMaxMinutes: maxMinutes, intervalSeconds: 600)
+        TimerItem(name: "吃饭节律", kind: .eating, intervalSeconds: 600, eatingMaxMinutes: maxMinutes)
     }
 
     static func defaultSleep(hour: Int = 23, minute: Int = 30) -> TimerItem {
