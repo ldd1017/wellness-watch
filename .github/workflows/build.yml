@@ -18,21 +18,22 @@ jobs:
       - name: Generate xcodeproj
         run: xcodegen generate --spec project.yml
 
-      - name: Archive
+      - name: Build (unsigned)
         run: |
           mkdir -p out
           xcodebuild \
             -project WellnessWatch.xcodeproj \
             -scheme WellnessWatch \
             -configuration Release \
-            -archivePath build/WellnessWatch.xcarchive \
+            -derivedDataPath build/ \
             -destination 'generic/platform=watchOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             ONLY_ACTIVE_ARCH=NO \
-            archive
-          cp -R build/WellnessWatch.xcarchive/Products/Applications/WellnessWatch.app out/
+            build
+          # 产物路径在 derivedDataPath/Build/Products/<Config>-<platform>/
+          cp -R build/Build/Products/Release-watchsimulator/WellnessWatch.app out/
           (cd out && tar czf WellnessWatch-unsigned.app.tar.gz WellnessWatch.app)
 
       - name: Upload artifact
@@ -42,3 +43,4 @@ jobs:
           path: out/WellnessWatch-unsigned.app.tar.gz
           if-no-files-found: error
           retention-days: 7
+
