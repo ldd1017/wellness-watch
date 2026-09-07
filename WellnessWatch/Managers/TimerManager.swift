@@ -60,7 +60,7 @@ final class TimerManager: ObservableObject {
     }
 
     func remove(id: UUID) {
-        disarm(id)
+        disarm(id: id)
         items.removeAll { $0.id == id }
         save()
     }
@@ -82,7 +82,7 @@ final class TimerManager: ObservableObject {
         if item.isEnabled {
             arm(item)
         } else {
-            disarm(id)
+            disarm(id: id)
         }
         refreshRuntimeSession()
         scheduleAllSleeps()
@@ -101,7 +101,7 @@ final class TimerManager: ObservableObject {
             scheduleSleepNotification(for: item)
         case .bloodPressure:
             // 注册 HealthManager 监听
-            HealthManager.shared.requestAuthorization()
+            Task { await HealthManager.shared.requestAuthorization() }
         }
     }
 
