@@ -39,17 +39,17 @@ enum HapticManager {
     /// 根据场景挑选合适反馈
     static func play(for scene: Scene) {
         switch scene {
-        case .countTick:     gentle()
-        case .stopUser:      click()
-        case .eatTooMuch:    warning()
-        case .sleepTime:     warning()
-        case .bpHigh:        strong()
-        case .bpRising:      warning()
+        case .gentle:       gentle()
+        case .stopUser:     click()
+        case .eatTooMuch:   warning()
+        case .sleepTime:    warning()
+        case .bpHigh:       strong()
+        case .bpRising:     warning()
         }
     }
 
     enum Scene {
-        case countTick      // 计数节拍
+        case gentle         // 温和节拍
         case stopUser       // 停止计时
         case eatTooMuch     // 进食过多
         case sleepTime      // 睡眠时刻到
